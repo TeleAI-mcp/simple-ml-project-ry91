@@ -1,0 +1,31 @@
+name: Auto Comment on Label
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for specific labels and comment
+        env:
+          LABEL: ${{ github.event.label.name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          if [ "$LABEL" = "documentation" ]; then
+            COMMENT="Thank you for flagging this documentation issue. We will update it soon."
+          elif [ "$LABEL" = "feature" ]; then
+            COMMENT="Thank you for the feature request. We will consider including this in a future release."
+          elif [ "$LABEL" = "enhancement" ]; then
+            COMMENT="Thanks for the enhancement suggestion! We appreciate your input."
+          else
+            echo "No matching label, skipping comment."
+            exit 0
+          fi
+          
+          # Use GitHub CLI to post comment
+          echo "Posting comment for label $LABEL on issue $ISSUE_NUMBER"
+          gh issue comment $ISSUE_NUMBER --body "$COMMENT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
